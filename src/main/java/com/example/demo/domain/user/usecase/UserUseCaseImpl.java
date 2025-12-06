@@ -5,6 +5,8 @@ import com.example.demo.domain.user.api.dto.req.UserUpdateReq;
 import com.example.demo.domain.user.api.dto.res.UserRes;
 import com.example.demo.domain.user.infra.UserInfra;
 import com.example.demo.domain.user.model.User;
+import com.example.demo.global.dto.resp.result.SingleResult;
+import com.example.demo.global.util.ResponseUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,46 +23,35 @@ public class UserUseCaseImpl implements UserUseCase {
 
     @Override
     @Transactional
-    public UserRes createUser(UserCreateReq req) {
+    public SingleResult<Long> create(UserCreateReq req) {
         // 이메일 중복 체크
         if (userInfra.existsByEmail(req.getEmail())) {
             throw new RuntimeException("이미 존재하는 이메일입니다: " + req.getEmail());
         }
-
-        // User 도메인 모델 생성
-        User user = User.create(req.getName(), req.getEmail(), req.getPhone());
-
-        // 저장
-        User savedUser = userInfra.save(user);
-
-        return UserRes.from(savedUser);
+        User uer = User.create(req.getName(), req.getEmail(), req.getPhone());
+        User savedUser = userInfra.save(uer);
+        return ResponseUtil.getSingleResult(savedUser.getId());
     }
 
     @Override
     @Transactional
-    public UserRes updateUser(Long id, UserUpdateReq req) {
-        // 사용자 조회
+    public SingleResult<Long> update(Long id, UserUpdateReq req) {
         User user = userInfra.findById(id);
-
-        // 업데이트
         User updatedUser = user.update(req.getName(), req.getPhone());
-
-        // 저장
         User savedUser = userInfra.save(updatedUser);
-
-        return UserRes.from(savedUser);
+        return ResponseUtil.getSingleResult(savedUser.getId());
     }
 
     @Override
-    public UserRes getUserById(Long id) {
+    public SingleResult<UserRes> getUserById(Long id) {
         User user = userInfra.findById(id);
-        return UserRes.from(user);
+        return ResponseUtil.getSingleResult(UserRes.from(user));
     }
 
     @Override
-    public UserRes getUserByEmail(String email) {
+    public SingleResult<UserRes> getUserByEmail(String email) {
         User user = userInfra.findByEmail(email);
-        return UserRes.from(user);
+        return ResponseUtil.getSingleResult(UserRes.from(user));
     }
 
     @Override
@@ -89,23 +80,26 @@ public class UserUseCaseImpl implements UserUseCase {
 
     @Override
     @Transactional
-    public void deleteUser(Long id) {
+    public SingleResult<Boolean> deleteUser(Long id) {
         userInfra.deleteById(id);
+        return ResponseUtil.getSingleResult(true);
     }
 
     @Override
     @Transactional
-    public void activateUser(Long id) {
+    public SingleResult<Boolean> activateUser(Long id) {
         User user = userInfra.findById(id);
         User activatedUser = user.updateStatus(1);
         userInfra.save(activatedUser);
+        return ResponseUtil.getSingleResult(true);
     }
 
     @Override
     @Transactional
-    public void deactivateUser(Long id) {
+    public SingleResult<Boolean> deactivateUser(Long id) {
         User user = userInfra.findById(id);
         User deactivatedUser = user.updateStatus(0);
         userInfra.save(deactivatedUser);
+        return ResponseUtil.getSingleResult(true);
     }
 }

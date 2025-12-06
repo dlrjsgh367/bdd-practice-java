@@ -4,17 +4,17 @@ import com.example.demo.domain.user.api.dto.req.UserCreateReq;
 import com.example.demo.domain.user.api.dto.req.UserUpdateReq;
 import com.example.demo.domain.user.api.dto.res.UserRes;
 
+import com.example.demo.global.dto.resp.result.SingleResult;
 import java.util.List;
 
 public interface UserUseCase {
 
-    UserRes createUser(UserCreateReq req);
+    SingleResult<Long> create(UserCreateReq req);
+    SingleResult<Long> update(Long id, UserUpdateReq req);
 
-    UserRes updateUser(Long id, UserUpdateReq req);
+    SingleResult<UserRes> getUserById(Long id);
 
-    UserRes getUserById(Long id);
-
-    UserRes getUserByEmail(String email);
+    SingleResult<UserRes> getUserByEmail(String email);
 
     List<UserRes> getAllUsers();
 
@@ -22,9 +22,9 @@ public interface UserUseCase {
 
     List<UserRes> searchUsersByName(String name);
 
-    void deleteUser(Long id);
+    SingleResult<Boolean> deleteUser(Long id);
 
-    void activateUser(Long id);
+    SingleResult<Boolean> activateUser(Long id);
 
-    void deactivateUser(Long id);
+    SingleResult<Boolean> deactivateUser(Long id);
 }
